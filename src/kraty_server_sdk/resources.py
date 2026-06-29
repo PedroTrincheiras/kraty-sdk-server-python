@@ -307,6 +307,110 @@ class LobbiesClient:
         return _data(env)
 
 
+class LeaderboardsClient:
+    """``/server/v1/leaderboards/:key/score`` — server-authoritative scoring.
+
+    Unlike the client SDK's score path, this surface is NOT subject to
+    the game's ``acceptClientScores`` gate: the ``server_integration``
+    key is trusted, so studios that keep scoring server-side (anti-cheat,
+    simulation results) write here.
+    """
+
+    def __init__(self, client: KratyAdminClient) -> None:
+        self._client = client
+
+    def submit_score(
+        self,
+        external_player_id: str,
+        key: str,
+        value: float,
+        *,
+        segment: str | None = None,
+        idempotency_key: str | None = None,
+    ) -> dict[str, Any]:
+        """POST ``/server/v1/leaderboards/:key/score`` — submit a score
+        for a player on a score-ranked board.
+
+        Segmentation: on ``context`` boards pass ``segment`` as the
+        bucket value; on ``progression`` boards omit it (the server
+        derives the bucket from the player's progression state); on
+        unsegmented boards it's ignored.
+
+        Returns ``{"leaderboardId": str, "score": number, "rank": int | None}``.
+
+        Raises ``KratyServerError`` with ``code='not_found'`` for an
+        unknown player or board, and ``code='score_not_supported'`` (400)
+        for progression-ranked boards (which don't accept raw scores —
+        adjust the progression item instead).
+        """
+        body: dict[str, Any] = {
+            "externalPlayerId": external_player_id,
+            "value": value,
+        }
+        if segment is not None:
+            body["segment"] = segment
+        if idempotency_key is not None:
+            body["idempotencyKey"] = idempotency_key
+        env = self._client.request(
+            "POST",
+            f"/server/v1/leaderboards/{_enc(key)}/score",
+            body=body,
+        )
+        return _data(env)
+
+
+class EventsClient:
+    """``/server/v1/players/:externalId/events/...`` — server-authoritative
+    event progress.
+
+    Same shape as the client SDK's progress endpoint, but driven from
+    your backend (trusted simulation, server-side match results) rather
+    than the game client.
+    """
+
+    def __init__(self, client: KratyAdminClient) -> None:
+        self._client = client
+
+    def report_progress(
+        self,
+        external_player_id: str,
+        event_key: str,
+        attempt_id: str,
+        *,
+        mode: str,
+        metric_value: float | None = None,
+        metrics: dict[str, float] | None = None,
+        occurred_at: str | None = None,
+        idempotency_key: str | None = None,
+    ) -> dict[str, Any]:
+        """POST
+        ``/server/v1/players/:externalId/events/:eventKey/attempts/:attemptId/progress``
+        — push a metric update onto an in-flight attempt.
+
+        ``mode`` is ``"set"`` (write the value as the new metric) or
+        ``"increment"`` (add to the current). Returns
+        ``{"attempt": {...}, "milestonesFired": [...]}`` — the updated
+        attempt plus any milestones that fired (and the grants they
+        wrote) this call.
+        """
+        body: dict[str, Any] = {"mode": mode}
+        if metric_value is not None:
+            body["metricValue"] = metric_value
+        if metrics is not None:
+            body["metrics"] = metrics
+        if occurred_at is not None:
+            body["occurredAt"] = occurred_at
+        if idempotency_key is not None:
+            body["idempotencyKey"] = idempotency_key
+        env = self._client.request(
+            "POST",
+            f"/server/v1/players/{_enc(external_player_id)}"
+            f"/events/{_enc(event_key)}/attempts/{_enc(attempt_id)}/progress",
+            body=body,
+        )
+        return _data(env)
+
+
 class PlayersClient:
     """``/server/v1/players/:externalId`` — unified player snapshot,
     plus GDPR delete + export."""

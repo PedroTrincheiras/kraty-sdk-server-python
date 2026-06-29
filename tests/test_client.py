@@ -9,7 +9,7 @@ import httpx
 import pytest
 from conftest import API_KEY, BASE_URL  # type: ignore[import-not-found]
 
-from kraty_server_sdk import KratyServer, KratyNetworkError, KratyServerError, RetryConfig
+from kraty_server_sdk import KratyNetworkError, KratyServer, KratyServerError, RetryConfig
 
 
 def test_sends_bearer_authorization(respx_mock, make_kraty):

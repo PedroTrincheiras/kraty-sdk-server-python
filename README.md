@@ -1,23 +1,40 @@
 # kraty-server-sdk
 
-Python server SDK for the Kraty game-events platform — per-game
-server-side actions. Targets the `/server/v1` surface: manual
-grants, IAP fulfilment,
-inventory grant / revoke, wallet credit / debit, push-lobbies, and
-unified player snapshots.
+Python server SDK for the [Kraty](https://kraty.io) game-events
+platform — per-game server-side actions. Targets the `/server/v1`
+surface: manual grants, IAP fulfilment, inventory grant / revoke,
+wallet credit / debit, push-lobbies, and unified player snapshots.
+
+> 📖 **Full reference + examples:** <https://kraty.io/docs/server-sdks/python>
+>
+> The docs site has the complete guide — IAP fulfilment patterns,
+> every method, idempotency, retries, error handling. This README is
+> just enough to get started.
 
 > **Server-side only.** Authenticated with a `server_integration`
-> API key that can mint currency and items. Never embed this SDK
-> or its key in a client app — use one of the Kraty client SDKs
-> (TypeScript / Flutter / Unity) for game clients instead.
+> API key that can mint currency and items. Never embed this SDK or
+> its key in a client app — use one of the Kraty client SDKs
+> ([TypeScript](https://kraty.io/docs/sdks/typescript),
+> [Flutter](https://kraty.io/docs/sdks/flutter),
+> [Unity](https://kraty.io/docs/sdks/unity)) for game clients instead.
 
 ## Install
 
+The package isn't on PyPI yet — install directly from the public
+GitHub repo against a tagged release.
+
 ```bash
-uv add kraty-server-sdk
-# or
-pip install kraty-server-sdk
+# With uv (recommended):
+uv add 'kraty-server-sdk @ git+https://github.com/PedroTrincheiras/kraty-sdk-server-python.git@v0.1.0'
+
+# Or pip:
+pip install 'git+https://github.com/PedroTrincheiras/kraty-sdk-server-python.git@v0.1.0'
 ```
+
+Browse releases at
+<https://github.com/PedroTrincheiras/kraty-sdk-server-python/releases>.
+Once we publish to PyPI (v1.0) you'll be able to swap to
+`uv add kraty-server-sdk`.
 
 Requires Python 3.10+.
 
@@ -69,12 +86,47 @@ kraty.close()  # or use as a context manager:
 ## Resource clients
 
 ```python
-kraty.grants      # create (manual mint) / ack
-kraty.inventory   # grant / revoke
-kraty.wallet      # credit / debit
-kraty.lobbies     # push (pre-matched) / read
-kraty.players     # get (unified snapshot)
-kraty.health      # ping
+kraty.grants        # create (manual mint) / ack
+kraty.inventory     # grant / revoke
+kraty.wallet        # credit / debit
+kraty.lobbies       # push (pre-matched) / read
+kraty.leaderboards  # submit_score (server-authoritative)
+kraty.events        # report_progress (server-authoritative)
+kraty.players       # get (unified snapshot)
+kraty.health        # ping
+```
+
+## Server-authoritative scoring
+
+These two methods write through the **trusted** server surface, so they
+are **not** subject to the game's `acceptClientScores` gate — use them
+when scoring lives on your backend (anti-cheat, simulation, server-side
+match results) rather than the game client.
+
+```python
+# Submit a score onto a score-ranked board.
+# `context` boards: pass `segment` (the bucket value).
+# `progression` boards: omit `segment` (server derives the bucket).
+# unsegmented boards: `segment` is ignored.
+result = kraty.leaderboards.submit_score(
+    "player_42",
+    "weekly_high_scores",
+    12_500,
+    segment="NA",
+    idempotency_key="match_abc",
+)
+# {"leaderboardId": ..., "score": 12500, "rank": 3 | None}
+
+# Push server-authoritative progress onto an in-flight event attempt.
+# Returns {"attempt": {...}, "milestonesFired": [...]}.
+progress = kraty.events.report_progress(
+    "player_42",
+    "summer_event",
+    attempt_id,
+    mode="increment",
+    metric_value=50,
+    idempotency_key="match_abc",
+)
 ```
 
 ## Idempotency
@@ -171,6 +223,8 @@ Fires once per HTTP attempt, including retries.
 | `kraty.inventory` | `grant(external_player_id, item_key, quantity, ...)`, `revoke(external_player_id, item_key, quantity, ...)` |
 | `kraty.wallet` | `credit(external_player_id, economy_key, amount, ...)`, `debit(external_player_id, economy_key, amount, ...)` |
 | `kraty.lobbies` | `push(game_id, event_key, key, external_player_ids, ...)`, `read(game_id, lobby_id)` |
+| `kraty.leaderboards` | `submit_score(external_player_id, key, value, *, segment=None, idempotency_key=None)` → `POST /server/v1/leaderboards/:key/score` |
+| `kraty.events` | `report_progress(external_player_id, event_key, attempt_id, *, mode, metric_value=None, metrics=None, occurred_at=None, idempotency_key=None)` → `POST /server/v1/players/:externalId/events/:eventKey/attempts/:attemptId/progress` |
 | `kraty.players` | `get(external_player_id)` |
 | `kraty.health` | `ping()` |
 

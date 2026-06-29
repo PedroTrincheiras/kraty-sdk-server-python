@@ -10,9 +10,11 @@ from typing import TYPE_CHECKING
 
 from kraty_server_sdk.client import DEFAULT_BASE_URL, KratyAdminClient, RetryConfig
 from kraty_server_sdk.resources import (
+    EventsClient,
     GrantsClient,
     HealthClient,
     InventoryClient,
+    LeaderboardsClient,
     LobbiesClient,
     MigrateClient,
     PlayersClient,
@@ -61,6 +63,8 @@ class KratyServer:
         self.inventory = InventoryClient(self.client)
         self.wallet = WalletClient(self.client)
         self.lobbies = LobbiesClient(self.client)
+        self.leaderboards = LeaderboardsClient(self.client)
+        self.events = EventsClient(self.client)
         self.players = PlayersClient(self.client)
         self.health = HealthClient(self.client)
         self.migrate = MigrateClient(self.client)

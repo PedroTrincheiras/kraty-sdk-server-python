@@ -155,8 +155,8 @@ wheels = [
 ]
 
 [[package]]
-name = "kraty-admin"
-version = "0.0.1"
+name = "kraty-server-sdk"
+version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
