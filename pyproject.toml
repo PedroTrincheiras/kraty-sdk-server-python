@@ -1,6 +1,6 @@
 [project]
 name = "kraty-server-sdk"
-version = "0.2.0"
+version = "0.3.0"
 description = "Python server SDK for the Kraty game-events platform — per-game server-side actions: manual grants, IAP fulfilment, inventory grant/revoke, wallet credit/debit, push-lobbies, webhook verification. Targets the /server/v1 surface."
 readme = "README.md"
 requires-python = ">=3.10"
