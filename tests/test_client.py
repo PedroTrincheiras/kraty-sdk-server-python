@@ -33,7 +33,7 @@ def test_stamps_idempotency_key_on_post(respx_mock, make_kraty, key_gen):
         entries=[{"type": "currency", "currencyKey": "gold", "amount": 1}],
     )
     body = json.loads(route.calls[0].request.content)
-    # Caller-supplied key wins — the auto-generator must NOT fire.
+    # Caller-supplied key wins, so the auto-generator must NOT fire.
     assert body["idempotencyKey"] == "apple_receipt_abc"
     assert key_gen.count == 0
 
@@ -143,7 +143,7 @@ def test_does_not_retry_on_4xx_other_than_408_425_429(respx_mock, make_kraty):
             idempotency_key="x",
             entries=[{"type": "currency", "currencyKey": "gold", "amount": 1}],
         )
-    # No retry — 404 is terminal.
+    # No retry: 404 is terminal.
     assert route.call_count == 1
 
 

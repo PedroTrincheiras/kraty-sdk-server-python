@@ -1,7 +1,7 @@
 """Error types for the Kraty server SDK.
 
 Mirrors the sealed-ish error codes the backend's ``/server/v1``
-surface returns. Codes are stable strings — match on
+surface returns. Codes are stable strings; match on
 ``KratyServerError.code``, not on ``KratyServerError.message``.
 """
 
@@ -19,10 +19,10 @@ class KratyServerError(Exception):
             ``{"error": {"code", "message", "details"}}`` envelope.
         message: Human-readable message (the SDK uses this as the
             ``Exception`` message too).
-        details: Optional structured details — usually a dict with
+        details: Optional structured details, usually a dict with
             code-specific fields (e.g. ``{"resource": "gold"}``).
 
-    Use the typed ``is_*`` properties to switch on a code — they're
+    Use the typed ``is_*`` properties to switch on a code; they're
     cheaper to read than a chain of string comparisons and immune to
     typos. One property exists per code; if you need to match on a
     code the SDK hasn't bumped to yet, use the generic
@@ -58,26 +58,26 @@ class KratyServerError(Exception):
 
     @property
     def is_unauthenticated(self) -> bool:
-        """401 — ``Authorization`` header missing on a protected route."""
+        """401: ``Authorization`` header missing on a protected route."""
         return self.code == "unauthenticated"
 
     @property
     def is_session_invalid(self) -> bool:
-        """401 — Bearer token is malformed, revoked, or rejected."""
+        """401: Bearer token is malformed, revoked, or rejected."""
         return self.code == "session_invalid"
 
     @property
     def is_forbidden(self) -> bool:
-        """403 — auth was valid but permission set / studio / game didn't match the route.
+        """403: auth was valid but permission set / studio / game didn't match the route.
 
-        Usually a misconfigured key — the ``server_integration`` key
+        Usually a misconfigured key: the ``server_integration`` key
         in your env should match the game you're calling against.
         """
         return self.code == "forbidden"
 
     @property
     def is_not_found(self) -> bool:
-        """404 — referenced resource doesn't exist or isn't visible to this studio.
+        """404: referenced resource doesn't exist or isn't visible to this studio.
 
         For grant ack: the grant id was never minted. For inventory
         grant: the item key isn't in the catalog. For player lookup:
@@ -87,7 +87,7 @@ class KratyServerError(Exception):
 
     @property
     def is_player_banned(self) -> bool:
-        """403 — the player has been soft-banned by the studio.
+        """403: the player has been soft-banned by the studio.
 
         Banned players cannot drive SDK writes (events.start /
         progress, grants.claim, etc.) and cannot re-register a fresh
@@ -98,12 +98,12 @@ class KratyServerError(Exception):
 
     @property
     def is_validation_failed(self) -> bool:
-        """400 — request body / query failed schema validation. ``details`` carries field-level errors."""
+        """400: request body / query failed schema validation. ``details`` carries field-level errors."""
         return self.code == "validation_failed"
 
     @property
     def is_conflict(self) -> bool:
-        """409 — generic mutation conflict (e.g. wallet debit on a 0 balance, mode mismatch).
+        """409: generic mutation conflict (e.g. wallet debit on a 0 balance, mode mismatch).
 
         More specific 409 codes (``idempotency_conflict``) get their
         own getters; this catches the rest.
@@ -112,30 +112,30 @@ class KratyServerError(Exception):
 
     @property
     def is_rate_limited(self) -> bool:
-        """429 — per-key rate limit exceeded.
+        """429: per-key rate limit exceeded.
 
         ``Retry-After`` header carries the wait. SDK auto-retries
-        with backoff before surfacing — by the time you see this,
+        with backoff before surfacing, so by the time you see this,
         the retry budget is exhausted.
         """
         return self.code == "rate_limited"
 
     @property
     def is_internal_error(self) -> bool:
-        """500 — unhandled exception. Logged + alerted server-side."""
+        """500: unhandled exception. Logged + alerted server-side."""
         return self.code == "internal_error"
 
     @property
     def is_tenant_mismatch(self) -> bool:
-        """403 — cross-studio access attempt (RLS rejected the row). Misconfigured key."""
+        """403: cross-studio access attempt (RLS rejected the row). Misconfigured key."""
         return self.code == "tenant_mismatch"
 
     @property
     def is_idempotency_conflict(self) -> bool:
-        """409 — same ``idempotency_key`` was used with a different request body within the cache TTL.
+        """409: same ``idempotency_key`` was used with a different request body within the cache TTL.
 
         Means a duplicate IAP fulfilment is in flight with a different
-        payload — investigate before retrying.
+        payload, so investigate before retrying.
         """
         return self.code == "idempotency_conflict"
 
@@ -143,12 +143,12 @@ class KratyServerError(Exception):
 
     @property
     def is_event_disabled(self) -> bool:
-        """409 — the event is configured but disabled. Server fulfilment paths usually shouldn't hit this."""
+        """409: the event is configured but disabled. Server fulfilment paths usually shouldn't hit this."""
         return self.code == "event_disabled"
 
     @property
     def is_invalid_metric(self) -> bool:
-        """400 — a manual-grant entry referenced an unknown metric / item / currency key."""
+        """400: a manual-grant entry referenced an unknown metric / item / currency key."""
         return self.code == "invalid_metric"
 
 
@@ -156,8 +156,8 @@ class KratyNetworkError(Exception):
     """Raised when the request never produced an HTTP response.
 
     DNS failure, socket reset, abort / timeout, etc. The SDK
-    auto-retries network errors with backoff before surfacing this —
-    by the time you see one, the retry budget is exhausted.
+    auto-retries network errors with backoff before surfacing this,
+    so by the time you see one, the retry budget is exhausted.
     """
 
     def __init__(self, message: str, original_cause: BaseException | None = None) -> None:

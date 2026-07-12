@@ -4,7 +4,7 @@ The platform stamps every outgoing webhook with an ``X-Signature``
 header in the form ``t=<unixSeconds>,v1=<hex>``, where the v1 hex is
 ``HMAC_SHA256(secret, "<t>.<rawBody>")``. Receivers MUST:
 
-1. Capture the **raw** request body (not the parsed JSON — even a
+1. Capture the **raw** request body (not the parsed JSON, since even a
    re-stringification can change byte ordering or whitespace, and
    that's enough to break the HMAC).
 2. Read ``X-Signature`` from the request headers.
@@ -13,8 +13,8 @@ header in the form ``t=<unixSeconds>,v1=<hex>``, where the v1 hex is
    returns ``False``.
 
 The function also rejects signatures whose timestamp is more than
-``tolerance_seconds`` (default 300s) in the past — that defeats
-replay attacks even if an attacker captures a real header — and
+``tolerance_seconds`` (default 300s) in the past, which defeats
+replay attacks even if an attacker captures a real header, and
 more than 60s in the future, which catches forged headers with
 tampered clocks.
 
@@ -51,7 +51,7 @@ import datetime as _dt
 import hashlib
 import hmac
 
-# Window for "this signature was issued in the future" — we tolerate
+# Window for "this signature was issued in the future": we tolerate
 # up to 60s of forward clock skew, anything more rejects as forged.
 _MAX_FORWARD_SKEW_SECONDS = 60
 
@@ -76,7 +76,7 @@ def verify_webhook(
             header.
         secret: The webhook's signing secret from your portal config.
         tolerance_seconds: Replay-window cap. Default 300 (5 minutes).
-        now: Override for tests — defaults to
+        now: Override for tests; defaults to
             ``datetime.now(timezone.utc)``.
 
     Returns:

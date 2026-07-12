@@ -3,7 +3,7 @@
 The verifier MUST byte-for-byte match the Node server SDK's
 ``verifyWebhook`` AND the backend's
 ``apps/backend/src/core/webhooks/signing.ts``. The fixture signatures
-below are computed the same way the backend computes them — any
+below are computed the same way the backend computes them, so any
 divergence in the verifier surfaces as a failing test.
 """
 

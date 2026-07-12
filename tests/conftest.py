@@ -28,7 +28,7 @@ def key_gen() -> _CountingKeyGen:
 
 @pytest.fixture
 def make_kraty(
-    respx_mock,  # noqa: ARG001 — fixture must run, side effects only
+    respx_mock,  # noqa: ARG001 (fixture must run, side effects only)
     key_gen: _CountingKeyGen,
 ):
     """Returns a factory that builds a KratyServer pointed at the

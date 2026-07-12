@@ -1,4 +1,4 @@
-"""Convenience facade — instantiate one :class:`KratyServer` instead
+"""Convenience facade: instantiate one :class:`KratyServer` instead
 of wiring up :class:`KratyAdminClient` + each resource client by
 hand.
 """
@@ -30,12 +30,12 @@ if TYPE_CHECKING:
 class KratyServer:
     """Convenience facade for the ``/server/v1`` server surface.
 
-    Instantiate one ``KratyServer`` per studio/game backend service —
+    Instantiate one ``KratyServer`` per studio/game backend service;
     all resource clients share the same underlying HTTP client
     (connection pool, retry config, telemetry hook).
 
     Use this from your studio's BACKEND only. Never embed in a web
-    bundle, mobile app, or Unity build — the ``server_integration``
+    bundle, mobile app, or Unity build: the ``server_integration``
     API key can mint currency and items.
     """
 

@@ -29,11 +29,11 @@ _HTTP_NO_CONTENT = 204
 
 # SDK name + version, sent as ``X-Kraty-SDK: <name>/<version>`` on
 # every request. Lets the backend tell which SDK + version sent a
-# given request — useful for debugging stale-SDK deployments and
+# given request, useful for debugging stale-SDK deployments and
 # for graceful deprecation handling. Bump in lockstep with
 # pyproject.toml ``version``.
 _SDK_NAME = "kraty-server-sdk"
-_SDK_VERSION = "0.0.1"
+_SDK_VERSION = "0.6.0"
 _SDK_USER_AGENT = f"{_SDK_NAME}/{_SDK_VERSION}"
 
 
@@ -142,7 +142,7 @@ class KratyAdminClient:
         """Fire a JSON request against ``/server/v1``.
 
         Resource clients call this. Returns the parsed JSON response
-        (typically ``{"data": ...}`` for resource endpoints — callers
+        (typically ``{"data": ...}`` for resource endpoints; callers
         unwrap as needed). Raises :class:`KratyServerError` for
         non-2xx and :class:`KratyNetworkError` for transport failures.
         """
@@ -194,7 +194,7 @@ class KratyAdminClient:
                     last_err = wrapped
                     continue
                 raise wrapped from exc
-        # Unreachable in practice — the loop always returns or raises.
+        # Unreachable in practice; the loop always returns or raises.
         raise last_err or KratyNetworkError("exhausted retries")
 
     # ─── internals ─────────────────────────────────────────────────

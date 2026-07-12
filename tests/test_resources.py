@@ -284,7 +284,7 @@ def test_players_get_returns_unified_snapshot(respx_mock, make_kraty):
     assert snap["wallet"][0]["balance"] == 100
 
 
-# ─── PlayersClient — GDPR delete + export ───────────────────────────
+# ─── PlayersClient: GDPR delete + export ────────────────────────────
 
 
 def test_players_delete_posts_reason_and_returns_outcome(respx_mock, make_kraty):

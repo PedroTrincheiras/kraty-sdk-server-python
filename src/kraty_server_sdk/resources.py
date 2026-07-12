@@ -16,7 +16,7 @@ from kraty_server_sdk.client import KratyAdminClient
 
 
 class GrantsClient:
-    """``/server/v1/players/:externalId/grants`` — manual grant minting.
+    """``/server/v1/players/:externalId/grants``: manual grant minting.
 
     Used for IAP fulfilment, make-goods, manual operator rewards, and
     any other server-issued payout.
@@ -37,11 +37,11 @@ class GrantsClient:
         source_ref_id: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        """POST ``/server/v1/players/:externalId/grants`` — mint a new grant.
+        """POST ``/server/v1/players/:externalId/grants``: mint a new grant.
 
         Args:
             external_player_id: Stable player identifier.
-            idempotency_key: Required — usually the IAP receipt id.
+            idempotency_key: Required, usually the IAP receipt id.
                 Replays with the same body return the original grant;
                 replays with a DIFFERENT body return 409
                 ``idempotency_conflict``.
@@ -52,7 +52,7 @@ class GrantsClient:
                 * ``{"type": "crate",    "crateItemKey": str, "quantity": int}``
             kind: ``"reward"`` (default) or ``"crate"``. Crates need to
                 be ``/open``\\ ed by the player to roll their contents.
-            expires_at: Optional ISO datetime — grant becomes
+            expires_at: Optional ISO datetime; the grant becomes
                 unclaimable after this.
             source_kind: ``"api"`` (default) or ``"admin"``.
             source_ref_id: Tracing id (usually the IAP receipt).
@@ -86,7 +86,7 @@ class GrantsClient:
         *,
         idempotency_key: str | None = None,
     ) -> dict[str, Any]:
-        """POST ``/server/v1/players/:externalId/grants/:grantId/ack`` — server-side claim.
+        """POST ``/server/v1/players/:externalId/grants/:grantId/ack``: server-side claim.
 
         Use this when your backend wants to flip a grant to ``claimed``
         without the player's client SDK having to round-trip (e.g.
@@ -106,7 +106,7 @@ class GrantsClient:
 
 
 class InventoryClient:
-    """``/server/v1/players/:p/inventory(/...)`` — platform-managed inventory grant + revoke.
+    """``/server/v1/players/:p/inventory(/...)``: platform-managed inventory grant + revoke.
 
     Only meaningful when the game has
     ``settings.inventoryManagement === 'platform'``. For studio-managed
@@ -126,7 +126,7 @@ class InventoryClient:
         source_ref_id: str | None = None,
         idempotency_key: str | None = None,
     ) -> dict[str, Any]:
-        """POST ``/server/v1/players/:p/inventory/:itemKey/grant`` — atomic increment.
+        """POST ``/server/v1/players/:p/inventory/:itemKey/grant``: atomic increment.
 
         Used for IAP item delivery, make-goods, or operator-issued
         items. Supply the IAP receipt id as ``idempotency_key`` so
@@ -150,10 +150,10 @@ class InventoryClient:
         source_ref_id: str | None = None,
         idempotency_key: str | None = None,
     ) -> dict[str, Any]:
-        """POST ``/server/v1/players/:p/inventory/:itemKey/revoke`` — atomic decrement.
+        """POST ``/server/v1/players/:p/inventory/:itemKey/revoke``: atomic decrement.
 
         Used for chargebacks and admin corrections. 409 on insufficient
-        quantity — the audit ledger never goes negative.
+        quantity, because the audit ledger never goes negative.
         """
         body = self._adjust_body(quantity, reason, source_ref_id, idempotency_key)
         env = self._client.request(
@@ -181,7 +181,7 @@ class InventoryClient:
 
 
 class WalletClient:
-    """``/server/v1/players/:p/wallet(/...)`` — server-side currency mint + burn.
+    """``/server/v1/players/:p/wallet(/...)``: server-side currency mint + burn.
 
     Counterpart to the client SDK's ``wallet.debit``: only the server
     surface can credit balance, which is why this server SDK is a
@@ -201,7 +201,7 @@ class WalletClient:
         source_ref_id: str | None = None,
         idempotency_key: str | None = None,
     ) -> dict[str, Any]:
-        """POST ``/server/v1/players/:p/wallet/:economyKey/credit`` — atomic increment.
+        """POST ``/server/v1/players/:p/wallet/:economyKey/credit``: atomic increment.
 
         Used for IAP currency fulfilment, support reissues, and prize
         distribution. Pass the receipt id as ``idempotency_key``.
@@ -224,7 +224,7 @@ class WalletClient:
         source_ref_id: str | None = None,
         idempotency_key: str | None = None,
     ) -> dict[str, Any]:
-        """POST ``/server/v1/players/:p/wallet/:economyKey/debit`` — atomic decrement.
+        """POST ``/server/v1/players/:p/wallet/:economyKey/debit``: atomic decrement.
 
         Used for refunds and admin corrections. 409 on insufficient
         balance.
@@ -255,7 +255,7 @@ class WalletClient:
 
 
 class LobbiesClient:
-    """``/server/v1/games/:gameId/.../lobbies`` — push pre-matched lobbies.
+    """``/server/v1/games/:gameId/.../lobbies``: push pre-matched lobbies.
 
     Use when your studio's own matchmaker (Steam, GameLift, Photon)
     already chose a roster and you want Kraty to host the event
@@ -276,7 +276,7 @@ class LobbiesClient:
         fill_bots: bool | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        """POST ``/server/v1/games/:gameId/events/:eventKey/lobbies`` — create a pre-matched lobby.
+        """POST ``/server/v1/games/:gameId/events/:eventKey/lobbies``: create a pre-matched lobby.
 
         Idempotent on ``key`` (your studio's lobby id). Requires the
         event's ``leaderboardMode`` to be ``'lobby_matched'``.
@@ -299,7 +299,7 @@ class LobbiesClient:
         return _data(env)
 
     def read(self, game_id: str, lobby_id: str) -> dict[str, Any]:
-        """GET ``/server/v1/games/:gameId/lobbies/:lobbyId`` — server-side lobby read."""
+        """GET ``/server/v1/games/:gameId/lobbies/:lobbyId``: server-side lobby read."""
         env = self._client.request(
             "GET",
             f"/server/v1/games/{_enc(game_id)}/lobbies/{_enc(lobby_id)}",
@@ -308,7 +308,7 @@ class LobbiesClient:
 
 
 class LeaderboardsClient:
-    """``/server/v1/leaderboards/:key/score`` — server-authoritative scoring.
+    """``/server/v1/leaderboards/:key/score``: server-authoritative scoring.
 
     Unlike the client SDK's score path, this surface is NOT subject to
     the game's ``acceptClientScores`` gate: the ``server_integration``
@@ -328,7 +328,7 @@ class LeaderboardsClient:
         segment: str | None = None,
         idempotency_key: str | None = None,
     ) -> dict[str, Any]:
-        """POST ``/server/v1/leaderboards/:key/score`` — submit a score
+        """POST ``/server/v1/leaderboards/:key/score``: submit a score
         for a player on a score-ranked board.
 
         Segmentation: on ``context`` boards pass ``segment`` as the
@@ -340,7 +340,7 @@ class LeaderboardsClient:
 
         Raises ``KratyServerError`` with ``code='not_found'`` for an
         unknown player or board, and ``code='score_not_supported'`` (400)
-        for progression-ranked boards (which don't accept raw scores —
+        for progression-ranked boards (which don't accept raw scores;
         adjust the progression item instead).
         """
         body: dict[str, Any] = {
@@ -360,7 +360,7 @@ class LeaderboardsClient:
 
 
 class EventsClient:
-    """``/server/v1/players/:externalId/events/...`` — server-authoritative
+    """``/server/v1/players/:externalId/events/...``: server-authoritative
     event progress.
 
     Same shape as the client SDK's progress endpoint, but driven from
@@ -384,12 +384,12 @@ class EventsClient:
         idempotency_key: str | None = None,
     ) -> dict[str, Any]:
         """POST
-        ``/server/v1/players/:externalId/events/:eventKey/attempts/:attemptId/progress``
-        — push a metric update onto an in-flight attempt.
+        ``/server/v1/players/:externalId/events/:eventKey/attempts/:attemptId/progress``:
+        push a metric update onto an in-flight attempt.
 
         ``mode`` is ``"set"`` (write the value as the new metric) or
         ``"increment"`` (add to the current). Returns
-        ``{"attempt": {...}, "milestonesFired": [...]}`` — the updated
+        ``{"attempt": {...}, "milestonesFired": [...]}``: the updated
         attempt plus any milestones that fired (and the grants they
         wrote) this call.
         """
@@ -410,16 +410,42 @@ class EventsClient:
         )
         return _data(env)
 
+    # Alias matching the client SDK's ``progress`` verb, so the same name
+    # works when moving score submission to your server. ``report_progress``
+    # stays the canonical server-SDK name.
+    progress = report_progress
+
+    def finish(
+        self,
+        external_player_id: str,
+        event_key: str,
+        attempt_id: str,
+    ) -> dict[str, Any]:
+        """POST
+        ``/server/v1/players/:externalId/events/:eventKey/attempts/:attemptId/finish``:
+        end an in-progress attempt now, finalizing with its current score
+        (server-authoritative counterpart to the client SDK ``finish``).
+        Returns ``{"attempt": {...}, "outcome": "completed" | "expired"}``:
+        ``completed`` for a score-attack end / target met, ``expired`` for a
+        target event ended early.
+        """
+        env = self._client.request(
+            "POST",
+            f"/server/v1/players/{_enc(external_player_id)}"
+            f"/events/{_enc(event_key)}/attempts/{_enc(attempt_id)}/finish",
+        )
+        return _data(env)
+
 
 class PlayersClient:
-    """``/server/v1/players/:externalId`` — unified player snapshot,
+    """``/server/v1/players/:externalId``: unified player snapshot,
     plus GDPR delete + export."""
 
     def __init__(self, client: KratyAdminClient) -> None:
         self._client = client
 
     def get(self, external_player_id: str) -> dict[str, Any]:
-        """GET ``/server/v1/players/:externalId`` — returns ``{player, inventory, wallet, recentGrants}``."""
+        """GET ``/server/v1/players/:externalId``: returns ``{player, inventory, wallet, recentGrants}``."""
         env = self._client.request(
             "GET",
             f"/server/v1/players/{_enc(external_player_id)}",
@@ -432,7 +458,7 @@ class PlayersClient:
         *,
         reason: str = "gdpr_erasure",
     ) -> dict[str, Any]:
-        """POST ``/server/v1/players/:externalId/delete`` — GDPR
+        """POST ``/server/v1/players/:externalId/delete``: GDPR
         Article 17 right of erasure.
 
         Anonymizes the player row in place and cascades through
@@ -458,8 +484,8 @@ class PlayersClient:
         ``test``. Recorded on the audit log.
 
         Emits one final ``player.deleted`` webhook with the original
-        external id so your backend can mirror the deletion. Idempotent
-        — erasure for a never-existed player succeeds with
+        external id so your backend can mirror the deletion. Idempotent:
+        erasure for a never-existed player succeeds with
         ``status: "no_op_never_existed"`` (GDPR semantics: nothing to erase).
         """
         env = self._client.request(
@@ -470,7 +496,7 @@ class PlayersClient:
         return _data(env)
 
     def export(self, external_player_id: str) -> dict[str, Any]:
-        """GET ``/server/v1/players/:externalId/export`` — GDPR
+        """GET ``/server/v1/players/:externalId/export``: GDPR
         Article 15 right of access.
 
         Returns the full machine-readable bundle of everything Kraty
@@ -487,7 +513,7 @@ class PlayersClient:
         return _data(env)
 
     def ban(self, external_player_id: str, *, reason: str) -> dict[str, Any]:
-        """POST ``/server/v1/players/:externalId/ban`` — soft-ban a
+        """POST ``/server/v1/players/:externalId/ban``: soft-ban a
         player. Gates future SDK writes (events.start / progress /
         claim / open / debit / consume / register all return 403
         ``player_banned``) without touching existing scores or grants.
@@ -496,7 +522,7 @@ class PlayersClient:
         anomaly and bans the player automatically. The actor is
         recorded as ``api_key:<prefix>`` on the audit row.
 
-        Idempotent — re-banning refreshes the reason but doesn't
+        Idempotent: re-banning refreshes the reason but doesn't
         re-fire the webhook.
         """
         env = self._client.request(
@@ -507,8 +533,8 @@ class PlayersClient:
         return _data(env)
 
     def unban(self, external_player_id: str) -> dict[str, Any]:
-        """POST ``/server/v1/players/:externalId/unban`` — lift a
-        soft-ban. Symmetric to :meth:`ban`. Idempotent — unbanning a
+        """POST ``/server/v1/players/:externalId/unban``: lift a
+        soft-ban. Symmetric to :meth:`ban`. Idempotent: unbanning a
         non-banned player returns ``applied: False``.
         """
         env = self._client.request(
@@ -522,7 +548,7 @@ class PlayersClient:
         from_external_player_id: str,
         to_external_player_id: str,
     ) -> dict[str, Any]:
-        """POST ``/server/v1/players/:from/merge-into/:to`` — fold the
+        """POST ``/server/v1/players/:from/merge-into/:to``: fold the
         source player's record into the target.
 
         Reassigns attempts, grants, item + wallet ledgers; sums
@@ -534,7 +560,7 @@ class PlayersClient:
         onboarding, signs in via OAuth, and the studio backend folds
         the guest record into the authenticated player.
 
-        Idempotent — replaying after the merge returns
+        Idempotent: replaying after the merge returns
         ``status='no_op_already_merged'`` with the existing target.
 
         Raises ``KratyServerError`` with ``code='not_found'`` on
@@ -550,7 +576,7 @@ class PlayersClient:
 
 
 class HealthClient:
-    """``/server/v1/ping`` — connectivity + key-info echo."""
+    """``/server/v1/ping``: connectivity + key-info echo."""
 
     def __init__(self, client: KratyAdminClient) -> None:
         self._client = client
@@ -562,7 +588,7 @@ class HealthClient:
 
 
 class MigrateClient:
-    """``/server/v1/migrate/*`` — bulk-import endpoints for studios moving
+    """``/server/v1/migrate/*``: bulk-import endpoints for studios moving
     existing players, wallets, and inventory into Kraty from another
     platform.
 
@@ -570,7 +596,7 @@ class MigrateClient:
     its own ``idempotency_key`` (typically the studio's stable id for
     that player / wallet entry / inventory holding) so retries are
     safe at the row level. Bad rows are captured in the response's
-    ``failures`` list — the rest of the batch still applies.
+    ``failures`` list; the rest of the batch still applies.
 
     Studios with larger datasets loop client-side::
 
@@ -579,15 +605,15 @@ class MigrateClient:
             if out["failed"] > 0:
                 collect_for_retry(out["failures"])
 
-    Webhooks are NOT emitted during migration — a 100k-player import
-    would otherwise flood the studio's own backend.
+    Webhooks are NOT emitted during migration, because a 100k-player
+    import would otherwise flood the studio's own backend.
     """
 
     def __init__(self, client: KratyAdminClient) -> None:
         self._client = client
 
     def players(self, rows: list[dict[str, Any]]) -> dict[str, Any]:
-        """POST ``/server/v1/migrate/players`` — bulk-import players.
+        """POST ``/server/v1/migrate/players``: bulk-import players.
 
         Each row shape::
 
@@ -603,7 +629,7 @@ class MigrateClient:
         return _data(env)
 
     def wallet(self, rows: list[dict[str, Any]]) -> dict[str, Any]:
-        """POST ``/server/v1/migrate/wallet`` — bulk-credit wallet balances.
+        """POST ``/server/v1/migrate/wallet``: bulk-credit wallet balances.
 
         Each row shape::
 
@@ -619,7 +645,7 @@ class MigrateClient:
         return _data(env)
 
     def inventory(self, rows: list[dict[str, Any]]) -> dict[str, Any]:
-        """POST ``/server/v1/migrate/inventory`` — bulk-grant inventory rows.
+        """POST ``/server/v1/migrate/inventory``: bulk-grant inventory rows.
 
         Each row shape::
 

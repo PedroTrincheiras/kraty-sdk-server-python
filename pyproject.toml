@@ -1,7 +1,7 @@
 [project]
 name = "kraty-server-sdk"
-version = "0.5.0"
-description = "Python server SDK for the Kraty game-events platform — per-game server-side actions: manual grants, IAP fulfilment, inventory grant/revoke, wallet credit/debit, push-lobbies, webhook verification. Targets the /server/v1 surface."
+version = "0.7.0"
+description = "Python server SDK for the Kraty game-events platform, covering per-game server-side actions: manual grants, IAP fulfilment, inventory grant/revoke, wallet credit/debit, push-lobbies, webhook verification. Targets the /server/v1 surface."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Proprietary" }
@@ -52,7 +52,7 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "PL"]
 ignore = [
-  "PLR0913",  # too many args — public API methods deliberately use lots of kwargs
+  "PLR0913",  # too many args: public API methods deliberately use lots of kwargs
 ]
 
 [tool.ruff.lint.per-file-ignores]
