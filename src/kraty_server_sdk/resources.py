@@ -334,7 +334,10 @@ class LeaderboardsClient:
         Segmentation: on ``context`` boards pass ``segment`` as the
         bucket value; on ``progression`` boards omit it (the server
         derives the bucket from the player's progression state); on
-        unsegmented boards it's ignored.
+        unsegmented boards it's ignored. ``country`` is always resolved
+        server-side from the player's stored country (server-authoritative),
+        and on a **combined** board (multiple axes) every axis is derived
+        server-side, so omit ``segment`` — one value can't address them all.
 
         Returns ``{"leaderboardId": str, "score": number, "rank": int | None}``.
 
@@ -449,6 +452,31 @@ class PlayersClient:
         env = self._client.request(
             "GET",
             f"/server/v1/players/{_enc(external_player_id)}",
+        )
+        return _data(env)
+
+    def set_identity(
+        self,
+        external_player_id: str,
+        *,
+        name: str,
+        avatar: str | None = None,
+    ) -> dict[str, Any]:
+        """PUT ``/server/v1/players/:externalId/identity``: override the
+        player's synthetic identity (display ``name`` + optional ``avatar``).
+
+        It's normally auto-generated from the game's pool on first contact;
+        call this to set a custom one (e.g. the player's chosen handle) that
+        shows on leaderboards and in the client SDK. The player must already
+        be registered. Returns ``{externalPlayerId, syntheticIdentity}``.
+        """
+        body: dict[str, Any] = {"name": name}
+        if avatar is not None:
+            body["avatar"] = avatar
+        env = self._client.request(
+            "PUT",
+            f"/server/v1/players/{_enc(external_player_id)}/identity",
+            body=body,
         )
         return _data(env)
 
