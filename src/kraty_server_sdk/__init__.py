@@ -53,7 +53,7 @@ from kraty_server_sdk.resources import (
 )
 from kraty_server_sdk.webhook import verify_webhook
 
-__version__ = "0.10.0"
+__version__ = "0.11.0"
 
 __all__ = [
     "EventsClient",
