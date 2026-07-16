@@ -25,10 +25,10 @@ GitHub repo against a tagged release.
 
 ```bash
 # With uv (recommended):
-uv add 'kraty-server-sdk @ git+https://github.com/PedroTrincheiras/kraty-sdk-server-python.git@v0.8.0'
+uv add 'kraty-server-sdk @ git+https://github.com/PedroTrincheiras/kraty-sdk-server-python.git@v0.9.0'
 
 # Or pip:
-pip install 'git+https://github.com/PedroTrincheiras/kraty-sdk-server-python.git@v0.8.0'
+pip install 'git+https://github.com/PedroTrincheiras/kraty-sdk-server-python.git@v0.9.0'
 ```
 
 Browse releases at
