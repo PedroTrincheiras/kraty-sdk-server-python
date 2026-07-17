@@ -386,6 +386,104 @@ def test_players_export_surfaces_not_found(respx_mock, make_kraty):
     assert exc_info.value.is_not_found is True
 
 
+# ─── PlayersClient: friends (read-only) ─────────────────────────────
+
+
+def test_players_friends_returns_list(respx_mock, make_kraty):
+    route = respx_mock.get(f"{BASE_URL}/server/v1/players/alice/friends").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "data": {
+                    "friends": [
+                        {
+                            "externalPlayerId": "bob",
+                            "displayIdentity": {"name": "Bob", "avatar": None, "country": "PT"},
+                            "friendsSince": "2026-01-01T00:00:00Z",
+                            "online": True,
+                            "lastActiveAt": "2026-06-10T12:00:00Z",
+                            "status": "in_match",
+                        }
+                    ]
+                }
+            },
+        )
+    )
+    k = make_kraty()
+    friends = k.players.friends("alice")
+    assert len(friends) == 1
+    assert friends[0]["externalPlayerId"] == "bob"
+    assert friends[0]["online"] is True
+    assert friends[0]["displayIdentity"]["name"] == "Bob"
+    assert route.calls[0].request.method == "GET"
+
+
+def test_players_friend_requests_returns_incoming_outgoing(respx_mock, make_kraty):
+    respx_mock.get(f"{BASE_URL}/server/v1/players/alice/friends/requests").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "data": {
+                    "incoming": [
+                        {
+                            "requestId": "r1",
+                            "direction": "incoming",
+                            "player": {
+                                "externalPlayerId": "carol",
+                                "displayIdentity": {"name": "Carol"},
+                            },
+                            "createdAt": "2026-06-01T00:00:00Z",
+                        }
+                    ],
+                    "outgoing": [],
+                }
+            },
+        )
+    )
+    k = make_kraty()
+    reqs = k.players.friend_requests("alice")
+    assert len(reqs["incoming"]) == 1
+    assert reqs["incoming"][0]["direction"] == "incoming"
+    assert reqs["outgoing"] == []
+
+
+def test_players_blocks_returns_list(respx_mock, make_kraty):
+    respx_mock.get(f"{BASE_URL}/server/v1/players/alice/blocks").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "data": {
+                    "blocked": [
+                        {
+                            "externalPlayerId": "mallory",
+                            "displayIdentity": None,
+                            "blockedAt": "2026-05-01T00:00:00Z",
+                        }
+                    ]
+                }
+            },
+        )
+    )
+    k = make_kraty()
+    blocked = k.players.blocks("alice")
+    assert len(blocked) == 1
+    assert blocked[0]["externalPlayerId"] == "mallory"
+    assert blocked[0]["displayIdentity"] is None
+
+
+def test_players_friends_surfaces_not_found(respx_mock, make_kraty):
+    respx_mock.get(f"{BASE_URL}/server/v1/players/ghost/friends").mock(
+        return_value=httpx.Response(
+            404,
+            json={"error": {"code": "not_found", "message": "Player 'ghost' not found"}},
+        )
+    )
+    k = make_kraty()
+    with pytest.raises(KratyServerError) as exc_info:
+        k.players.friends("ghost")
+    assert exc_info.value.is_not_found is True
+
+
 # ─── MigrateClient ──────────────────────────────────────────────────
 
 

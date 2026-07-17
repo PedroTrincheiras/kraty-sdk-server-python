@@ -602,6 +602,79 @@ class PlayersClient:
         )
         return _data(env)
 
+    def friends(self, external_player_id: str) -> list[dict[str, Any]]:
+        """GET ``/server/v1/players/:externalId/friends``: read ANY
+        player's accepted friends (read-only support / moderation
+        surface).
+
+        Each friend is enriched with display identity and live presence::
+
+            {
+              "externalPlayerId": str,
+              "displayIdentity": {"name": str, "avatar": str | None, "country": str | None} | None,
+              "friendsSince": "<iso>",
+              "online": bool,
+              "lastActiveAt": "<iso>" | None,
+              "status": str | None
+            }
+
+        The player's own add / accept / block actions live on the
+        client SDK's ``friends`` client, not here. Raises
+        ``KratyServerError`` with ``code='not_found'`` when the player
+        is unknown to Kraty.
+        """
+        env = self._client.request(
+            "GET",
+            f"/server/v1/players/{_enc(external_player_id)}/friends",
+        )
+        friends = _data(env).get("friends", [])
+        return friends if isinstance(friends, list) else []
+
+    def friend_requests(self, external_player_id: str) -> dict[str, Any]:
+        """GET ``/server/v1/players/:externalId/friends/requests``: the
+        player's pending incoming + outgoing friend requests (read-only).
+
+        Returns ``{"incoming": [FriendRequest], "outgoing": [FriendRequest]}``
+        where each request is::
+
+            {
+              "requestId": str,
+              "direction": "incoming" | "outgoing",
+              "player": {"externalPlayerId": str, "displayIdentity": {...} | None},
+              "createdAt": "<iso>"
+            }
+
+        Raises ``KratyServerError`` with ``code='not_found'`` when the
+        player is unknown to Kraty.
+        """
+        env = self._client.request(
+            "GET",
+            f"/server/v1/players/{_enc(external_player_id)}/friends/requests",
+        )
+        return _data(env)
+
+    def blocks(self, external_player_id: str) -> list[dict[str, Any]]:
+        """GET ``/server/v1/players/:externalId/blocks``: the players this
+        player has blocked (read-only).
+
+        Each row is::
+
+            {
+              "externalPlayerId": str,
+              "displayIdentity": {"name": str, "avatar": str | None, "country": str | None} | None,
+              "blockedAt": "<iso>"
+            }
+
+        Raises ``KratyServerError`` with ``code='not_found'`` when the
+        player is unknown to Kraty.
+        """
+        env = self._client.request(
+            "GET",
+            f"/server/v1/players/{_enc(external_player_id)}/blocks",
+        )
+        blocked = _data(env).get("blocked", [])
+        return blocked if isinstance(blocked, list) else []
+
 
 class HealthClient:
     """``/server/v1/ping``: connectivity + key-info echo."""
